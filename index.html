@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>협력사 납기·입고품질 현황</title>
+<style>
+:root{--navy:#152b40;--teal:#126480;--muted:#465d6d;--line:#dbe4eb;--orange:#b95016;--red:#b5243d;--pale:#edf4f7}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--navy);font:16px/1.55 "Malgun Gothic","맑은 고딕",system-ui,sans-serif}
+.wrap{width:min(1200px,calc(100% - 64px));margin:auto}header{background:var(--navy);border-top:5px solid #3c9aaa;color:#fff;padding:23px 0 28px}header p{margin:0 0 5px;color:#bfd5e3;font-size:14px;font-weight:700}h1,h2,h3,p{margin:0}h1{font-size:clamp(24px,4vw,36px);line-height:1.25;letter-spacing:-.045em}h2{font-size:22px;letter-spacing:-.04em}h3{font-size:16px}main{padding:22px 0 36px}.meta{color:var(--muted);font-size:14px;margin-bottom:16px}
+.kpis,.charts{display:grid;gap:14px}.kpis{grid-template-columns:repeat(4,1fr);margin-bottom:26px}.metric{padding:12px 16px;background:var(--pale);border-top:3px solid var(--teal)}.metric.risk{border-color:var(--red)}.metric span{display:block;color:var(--muted);font-size:14px}.metric strong{display:block;font-size:30px;line-height:1.35;font-variant-numeric:tabular-nums}.metric .sub{font-size:13px;margin-top:4px}.orange{color:var(--orange)}.red{color:var(--red)}
+.charts{grid-template-columns:repeat(2,minmax(0,1fr));margin:10px 0 25px}.card{border:1px solid var(--line);border-radius:8px;padding:13px 16px}.card h3{margin-bottom:7px}.legend{font-size:13px;color:var(--muted);margin-bottom:7px}.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:var(--teal)}.late,.dot.late{background:var(--orange)}.bad,.dot.bad{background:var(--red)}
+.brow{display:grid;grid-template-columns:110px minmax(0,1fr) 52px;align-items:center;gap:9px;margin:4px 0;font-size:14px}.brow b{text-align:right;font-size:13px}.track{height:9px;background:var(--pale);border-radius:3px;display:flex;overflow:hidden}.track i{background:var(--teal)}.track i.late{background:var(--orange)}.track i.bad{background:var(--red)}
+.columns{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin-top:8px;text-align:center}.col{display:grid;grid-template-rows:85px auto;font-size:13px;color:var(--muted)}.plot{display:flex;flex-direction:column;justify-content:end;align-items:center;border-bottom:1px solid var(--line);font-weight:700;color:var(--navy)}.bar{width:min(60%,32px);background:var(--teal);border-radius:4px 4px 0 0}.bar.late{background:var(--orange)}.col time,.col .label{margin-top:4px;white-space:nowrap}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}.count{color:var(--muted);font-size:14px}.filters{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr auto;gap:10px;align-items:end;padding:12px;background:var(--pale);border-radius:8px;margin-bottom:10px}.filters label{display:grid;gap:5px;font-size:14px;font-weight:700}input,select,button{font:inherit;color:inherit}input,select,.reset{height:40px;border:1px solid #aabdc9;border-radius:5px;background-color:#fff;padding:0 10px;width:100%;min-width:0}.reset{cursor:pointer;font-weight:700;white-space:nowrap}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;text-align:left;white-space:nowrap}th,td{padding:10px 12px;border-bottom:1px solid var(--line);font-size:14px}thead{background:var(--navy);color:#fff}tr.focus{background:#f2f8fb}.order{border:0;background:transparent;color:var(--teal);padding:0;text-decoration:underline;font-weight:700;cursor:pointer}.pill{display:inline-block;border-radius:4px;padding:2px 7px;background:var(--pale);font-weight:700}.pill.orange{background:#fff0e4}.pill.red{background:#fcecf0}.empty{text-align:center;padding:20px}
+.detail{margin-top:18px;border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:6px;padding:15px 17px}.detail h3{font-size:18px}.detail .meta{margin:3px 0 10px}.detail dl{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin:0}.detail dl>div{padding:10px 12px;background:#f5f8fa;border-radius:4px}.detail .wide{grid-column:1/-1}dt{font-weight:700;font-size:14px;margin-bottom:4px}dd{margin:0;font-size:14px}footer{border-top:1px solid var(--line);padding:12px 0 20px;font-size:13px;color:var(--muted)}:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+@media(max-width:780px){.wrap{width:calc(100% - 32px)}.kpis,.filters{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.charts,.detail dl{grid-template-columns:1fr}.metric strong{font-size:25px}.brow{grid-template-columns:95px minmax(0,1fr) 40px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><p>구매·품질 합동 검토</p><h1>협력사 납기·입고품질 현황</h1></div></header>
+<main class="wrap">
+<p class="meta" id="period"></p>
+<section class="kpis" id="kpis" aria-label="전체 주문 지표"></section>
+<section aria-labelledby="charts-title">
+<h2 id="charts-title">납기·입고검사 현황</h2>
+<div class="charts">
+<article class="card"><h3>협력사별 납기</h3><p class="legend"><i class="dot"></i>준수　<i class="dot late"></i>지연</p><div id="supplier-chart"></div></article>
+<article class="card"><h3>입고검사 결과</h3><p class="legend"><i class="dot"></i>정상　<i class="dot bad"></i>검사 이상</p><div id="quality-chart"></div></article>
+<article class="card"><h3>주문별 지연 <small class="count">(일)</small></h3><div class="columns" id="delay-chart"></div></article>
+<article class="card"><h3>일별 입고 <small class="count">(건)</small></h3><div class="columns" id="receipt-chart"></div></article>
+</div></section>
+<section aria-labelledby="table-title">
+<div class="section-head"><h2 id="table-title">주문별 현황</h2><span class="count" id="count" aria-live="polite"></span></div>
+<form class="filters" id="filters">
+<label>주문번호 검색<input id="search" type="search" placeholder="예시 R02" autocomplete="off"></label>
+<label>협력사<select id="supplier"><option value="">전체 협력사</option></select></label>
+<label>처리 상태<select id="status"><option value="">전체 상태</option></select></label>
+<label>예외 유형<select id="exception"><option value="">전체 유형</option><option value="delay">납기 지연</option><option value="quality">검사 이상</option><option value="both">지연 및 검사 이상</option><option value="none">예외 없음</option></select></label>
+<button class="reset" type="reset">초기화</button>
+</form>
+<div class="scroll"><table aria-labelledby="table-title"><thead><tr><th scope="col">주문번호</th><th scope="col">협력사</th><th scope="col">약정 납기</th><th scope="col">실제 입고</th><th scope="col">납기</th><th scope="col">입고검사</th><th scope="col">처리 상태</th></tr></thead><tbody id="orders"></tbody></table></div>
+<article class="detail" id="detail" tabindex="-1" aria-labelledby="detail-title">
+<h3 id="detail-title">R02 상세</h3>
+<p class="meta">협력사 A · 품질·구매 검토 · 처리 진행</p>
+<dl>
+<div><dt>납기</dt><dd id="r02-dates"></dd></div>
+<div><dt>검사 결과</dt><dd id="r02-quality"></dd></div>
+<div class="wide"><dt>증빙 상태</dt><dd>IQC-R02 기록 확보. 검사 사진과 검사성적서 첨부 없음. 불량 범위·수량 및 발생 원인 미확인.</dd></div>
+<div class="wide"><dt>후속조치</dt><dd>CAR-R02 발행 승인 요청안. 승인 후 담당자와 회신 기한 지정. 품질은 사진·검사성적서의 존재 여부를 확인하고 확보 자료로 불량 범위·수량을 대조합니다. 구매는 지연 경위와 후속 일정 영향을 확인합니다. 협력사에 발생 원인, 시정조치와 재발방지 대책의 회신을 요청합니다.</dd></div>
+<div class="wide"><dt>종결 조건</dt><dd>품질·구매가 검사 증빙과 회신을 대조하고 조치 이행·효과 및 후속 일정 영향을 검토해 종결 여부를 기록합니다. 확인 사항이 남으면 진행 상태를 유지하고 미확인 항목과 다음 확인 일정을 기록합니다.</dd></div>
+</dl></article>
+</section>
+</main>
+<footer class="wrap">구매품질-2026-1119-01 (안) · 주문 원자료 및 협력사 납기·입고검사 현황 보고</footer>
+<script id="source" type="application/json">[{"order_id":"R01","supplier":"A","due_date":"2026-11-14","received_date":"2026-11-14","quality":"정상","status":"완료"},{"order_id":"R02","supplier":"A","due_date":"2026-11-15","received_date":"2026-11-17","quality":"외관 불량","status":"진행"},{"order_id":"R03","supplier":"B","due_date":"2026-11-16","received_date":"2026-11-16","quality":"규격 불일치","status":"진행"},{"order_id":"R04","supplier":"C","due_date":"2026-11-16","received_date":"2026-11-18","quality":"정상","status":"완료"},{"order_id":"R05","supplier":"B","due_date":"2026-11-17","received_date":"2026-11-17","quality":"정상","status":"완료"},{"order_id":"R06","supplier":"D","due_date":"2026-11-17","received_date":"2026-11-19","quality":"정상","status":"진행"},{"order_id":"R07","supplier":"C","due_date":"2026-11-18","received_date":"2026-11-18","quality":"포장 손상","status":"진행"},{"order_id":"R08","supplier":"D","due_date":"2026-11-19","received_date":"2026-11-19","quality":"정상","status":"완료"}]</script>
+<script>
+const byId = id => document.getElementById(id);
+const orders = JSON.parse(byId('source').textContent).map(order => ({
+  ...order,
+  delay: Math.max(0, (Date.parse(order.received_date) - Date.parse(order.due_date)) / 86400000),
+  abnormal: order.quality !== '정상'
+}));
+const unique = values => [...new Set(values)].sort();
+const count = (items, condition) => items.filter(condition).length;
+const total = orders.length;
+const delayed = count(orders, order => order.delay > 0);
+const abnormal = count(orders, order => order.abnormal);
+const inProgress = count(orders, order => order.status === '진행');
+const suppliers = unique(orders.map(order => order.supplier));
+const dates = unique(orders.map(order => order.received_date));
+const percent = value => (100 * value / total).toFixed(1) + '%';
+const shortDate = value => value.slice(5).replace('-', '.');
+byId('period').textContent = dates.at(-1).replaceAll('-', '.') + ' 기준 · 입고 기간 ' + shortDate(dates[0]) + '–' + shortDate(dates.at(-1)) + ' · 협력사 ' + suppliers.length + '곳';
+byId('kpis').innerHTML = [
+  ['전체 주문', total + '건', '대상 주문 ' + orders[0].order_id + '–' + orders.at(-1).order_id],
+  ['납기 준수율', percent(total - delayed), (total - delayed) + '/' + total + '건 · <b class="orange">지연 ' + delayed + '건</b>'],
+  ['검사 이상률', percent(abnormal), '<b class="red">이상 ' + abnormal + '건</b> / 전체 ' + total + '건', 'risk'],
+  ['진행 건수', inProgress + '건', '전체의 ' + percent(inProgress)]
+].map(([label, value, sub, style = '']) => '<div class="metric ' + style + '"><span>' + label + '</span><strong>' + value + '</strong><span class="sub">' + sub + '</span></div>').join('');
+
+function horizontal(label, segments, max, summary) {
+  const bars = segments.map(([value, style]) => '<i class="' + style + '" style="width:' + (100 * value / max) + '%"></i>').join('');
+  return '<div class="brow"><span>' + label + '</span><div class="track" aria-hidden="true">' + bars + '</div><b>' + summary + '</b></div>';
+}
+const supplierTotals = suppliers.map(supplier => orders.filter(order => order.supplier === supplier));
+const maxSupplier = Math.max(...supplierTotals.map(group => group.length));
+byId('supplier-chart').innerHTML = supplierTotals.map(group => {
+  const late = count(group, order => order.delay > 0);
+  const onTime = group.length - late;
+  return horizontal('협력사 ' + group[0].supplier, [[onTime, ''], [late, 'late']], maxSupplier,
+    '<span aria-label="준수 ' + onTime + '건, 지연 ' + late + '건">' + onTime + ' / <span class="orange">' + late + '</span></span>');
+}).join('');
+const qualities = ['정상', ...unique(orders.filter(order => order.abnormal).map(order => order.quality))];
+const maxQuality = Math.max(...qualities.map(quality => count(orders, order => order.quality === quality)));
+byId('quality-chart').innerHTML = qualities.map(quality => {
+  const value = count(orders, order => order.quality === quality);
+  return horizontal(quality, [[value, quality === '정상' ? '' : 'bad']], maxQuality, value + '건');
+}).join('');
+
+function columns(id, entries, style) {
+  const max = Math.max(1, ...entries.map(([, value]) => value));
+  byId(id).innerHTML = entries.map(([label, value]) =>
+    '<div class="col"><div class="plot"><span>' + value + '</span><div class="bar ' + style + '" style="height:' + (value * 56 / max) + 'px" aria-hidden="true"></div></div><span class="label">' + label + '</span></div>'
+  ).join('');
+}
+columns('delay-chart', orders.map(order => [order.order_id, order.delay]), 'late');
+const everyDate = [];
+for (let day = Date.parse(dates[0]); day <= Date.parse(dates.at(-1)); day += 86400000) {
+  everyDate.push(new Date(day).toISOString().slice(0, 10));
+}
+columns('receipt-chart', everyDate.map(date => [shortDate(date), count(orders, order => order.received_date === date)]), '');
+
+const r02 = orders.find(order => order.order_id === 'R02');
+byId('r02-dates').innerHTML = '약정 ' + r02.due_date + ' · 입고 ' + r02.received_date + ' · <b class="orange">' + r02.delay + '일 지연</b>';
+byId('r02-quality').innerHTML = '<b class="red">' + r02.quality + '</b> · IQC-R02';
+
+for (const [id, values] of [['supplier', suppliers], ['status', unique(orders.map(order => order.status))]]) {
+  values.forEach(value => byId(id).add(new Option(id === 'supplier' ? '협력사 ' + value : value, value)));
+}
+const exceptions = {
+  '': () => true,
+  delay: order => order.delay > 0,
+  quality: order => order.abnormal,
+  both: order => order.delay > 0 && order.abnormal,
+  none: order => !order.delay && !order.abnormal
+};
+function renderOrders() {
+  const query = byId('search').value.trim().toUpperCase();
+  const supplier = byId('supplier').value;
+  const status = byId('status').value;
+  const exception = exceptions[byId('exception').value];
+  const matches = orders.filter(order => order.order_id.includes(query)
+    && (!supplier || order.supplier === supplier)
+    && (!status || order.status === status)
+    && exception(order));
+  byId('count').textContent = matches.length + '건 / 전체 ' + total + '건';
+  byId('orders').innerHTML = matches.map(order => {
+    const isR02 = order === r02;
+    const id = isR02 ? '<a href="#detail" class="order" aria-label="R02 상세 보기">R02</a>' : order.order_id;
+    const delivery = order.delay ? '<span class="pill orange">' + order.delay + '일 지연</span>' : '준수';
+    const quality = order.abnormal ? '<span class="pill red">' + order.quality + '</span>' : order.quality;
+    return '<tr' + (isR02 ? ' class="focus"' : '') + '><td>' + id + '</td><td>' + order.supplier + '</td><td>' +
+      order.due_date + '</td><td>' + order.received_date + '</td><td>' + delivery + '</td><td>' + quality +
+      '</td><td><span class="pill">' + order.status + '</span></td></tr>';
+  }).join('') || '<tr><td colspan="7" class="empty">조건에 맞는 주문이 없습니다.</td></tr>';
+  byId('detail').hidden = !matches.includes(r02);
+}
+const filters = byId('filters');
+byId('search').addEventListener('input', renderOrders);
+filters.addEventListener('change', renderOrders);
+filters.addEventListener('submit', event => event.preventDefault());
+filters.addEventListener('reset', () => requestAnimationFrame(renderOrders));
+renderOrders();
+</script>
+</body>
+</html>
